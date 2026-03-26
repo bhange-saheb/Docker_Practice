@@ -1,0 +1,110 @@
+Certainly. This is a complete "Master Guide" documenting every command we used to move Docker from a full 8GB root partition to a new 20GB volume. You can save this as `troubleshooting_log.txt` or a `README.md` for your portfolio.
+
+---
+
+## ??? Phase 1: Infrastructure & Storage Setup
+Before moving Docker, we had to prepare the new hardware.
+
+1.  **Identify the new disk:**
+    ```bash
+    lsblk
+    ```
+    *Outcome: Identified the new 20GB disk as `/dev/xvdf`.*
+
+2.  **Partition and Format the disk:**
+    ```bash
+    sudo fdisk /dev/xvdf  # (Created partition /dev/xvdf1)
+    sudo mkfs -t xfs /dev/xvdf1
+    ```
+
+3.  **Create Mount Point and Mount:**
+    ```bash
+    sudo mkdir /dockerdata
+    sudo mount /dev/xvdf1 /dockerdata
+    ```
+
+4.  **Make it Persistent (fstab):**
+    Added this line to `/etc/fstab` so the drive mounts on reboot:
+    ```bash
+    echo '/dev/xvdf1 /dockerdata xfs defaults,nofail 0 2' | sudo tee -a /etc/fstab
+    ```
+
+---
+
+## ?? Phase 2: Relocating Docker & Containerd
+This is the core "migration" where we redirected the services to the new drive.
+
+1.  **Stop all Docker services (Crucial Step):**
+    You must stop the socket first, or the engine will keep restarting.
+    ```bash
+    sudo systemctl stop docker.socket
+    sudo systemctl stop docker
+    sudo systemctl stop containerd
+    ```
+
+2.  **Configure Docker to use the new path:**
+    Create or edit `/etc/docker/daemon.json`:
+    ```json
+    {
+      "data-root": "/dockerdata"
+    }
+    ```
+
+3.  **Move Containerd and Create a Symbolic Link:**
+    Containerd manages the actual "blobs" and snapshots. We moved it to the 20GB drive and linked it back.
+    ```bash
+    sudo mkdir -p /dockerdata/containerd
+    sudo rsync -aqxP /var/lib/containerd/ /dockerdata/containerd/
+    sudo rm -rf /var/lib/containerd
+    sudo ln -s /dockerdata/containerd /var/lib/containerd
+    ```
+
+---
+
+## ?? Phase 3: Troubleshooting & Conflict Resolution
+During the process, we hit a "Start Limit Hit" error. Here is how we fixed it.
+
+Point 1 and 2 applicable if we tried to update "sudo nano /lib/systemd/system/docker.service" 
+
+1.  **Fixing Configuration Conflicts:**
+    We found that `/usr/lib/systemd/system/docker.service` also had a `--data-root` flag. We had to **remove** it from the service file because Docker refuses to start if the same setting is in two places.
+    ```bash
+    # Reverted ExecStart to default:
+    ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+    ```
+
+2.  **Clearing Stale Metadata:**
+    When the "failed to stat parent" error appeared, we cleared the internal database to let it re-index the new drive:
+    ```bash
+    sudo rm -rf /var/lib/containerd/io.containerd.metadata.v1.db
+    
+    ```
+
+3.  **The Fresh Start:**
+    ```bash
+    sudo systemctl daemon-reload
+    sudo systemctl start containerd
+    sudo systemctl start docker
+    ```
+
+---
+
+## ?? Phase 4: Reclaiming System Space
+Once we verified Docker was running on `/dockerdata`, we cleaned up the old 7GB root partition.
+
+1.  **Wipe the old data:**
+    ```bash
+    sudo rm -rf /var/lib/docker/*
+    ```
+
+2.  **Verify the new space:**
+    ```bash
+    df -h /            # Should show ~4GB free now
+    df -h /dockerdata  # Should show 20GB total
+    ```
+
+---
+
+### ?? Final Lesson Learned
+**"Stop the Socket, not just the Service."**
+In AWS/Ubuntu environments, stopping the `docker` service isn't enough because the `docker.socket` remains active. Any background process or even a `docker ps` command will trigger the socket to restart the engine, which can lead to file corruption or "Resource Busy" errors during a migration.

@@ -1,0 +1,50 @@
+This is a fantastic idea. As a DevOps professional, documenting these "war stories" is exactly what sets you apart. This "Troubleshooting Log" proves you can handle storage failures, service conflicts, and Linux administration under pressure.
+
+Here is a structured breakdown of our session for your portfolio or internal documentation.
+
+---
+
+## ??? Project: Dynamic Docker Storage Migration
+**Goal:** Relocate Docker and Containerd storage from a constrained 8GB Root partition to a dedicated 20GB EBS Volume without data loss or service disruption.
+
+### ??? Phase 1: Infrastructure & Mounting
+1.  **Volume Creation:** Provisioned a 20GB EBS volume (`gp3`) in the same Availability Zone as the EC2 instance.
+2.  **Device Identification:** Used `lsblk` to identify the new disk as `/dev/xvdf`.
+3.  **Partitioning & Formatting:** Created a partition (`/dev/xvdf1`) and formatted it with the `xfs` filesystem (standard for high-performance AWS workloads).
+4.  **Mounting:** * Created a mount point: `mkdir /dockerdata`.
+    * Mounted the drive: `mount /dev/xvdf1 /dockerdata`.
+    * **Persistence:** Added the entry to `/etc/fstab` using the `nofail` option to ensure the instance boots even if the disk has issues.
+
+### ?? Phase 2: Service Reconfiguration
+1.  **Docker Data-Root:** Updated `/etc/docker/daemon.json` to point `"data-root": "/dockerdata"`.
+2.  **The Containerd Symlink:** Since `containerd` is a separate backend, we moved `/var/lib/containerd` to the 20GB drive and created a **Symbolic Link** back to the original path. This redirected storage without breaking internal service dependencies.
+3.  **Conflict Resolution:** Identified a "Double Configuration" error where the `docker.service` file and `daemon.json` both tried to set the data root. We reverted the service file to keep the configuration clean and centralized in JSON.
+
+---
+
+## ?? Lessons Learned (The "DevOps" Takeaways)
+
+### 1. The "Ghost File" Trap
+**Problem:** Deleting files while a service is running doesn't always free up space.
+**Lesson:** Linux keeps a file "alive" as long as a process has it open. Always stop `docker` and `containerd` **and the `docker.socket`** before attempting to wipe old data directories to ensure the disk space is actually released.
+
+### 2. Service Dependencies (The Socket Loop)
+**Problem:** `systemctl stop docker` often fails to truly stop the engine because `docker.socket` automatically restarts it.
+**Lesson:** In modern Systemd environments, you must stop the **socket** first. If the socket is active, any command (like `docker ps`) will instantly trigger the engine to start again, potentially causing a race condition during maintenance.
+
+### 3. Configuration Hierarchy
+**Problem:** Docker crashed with an "exit-code" when we had settings in both the Service Unit file and `daemon.json`.
+**Lesson:** **Never duplicate configurations.** Pick one source of truth. Using `daemon.json` is preferred because it survives package updates better than editing files in `/usr/lib/systemd/`.
+
+### 4. Architecture Awareness (Multi-Arch)
+**Problem:** `no matching manifest for linux/amd64` error.
+**Lesson:** Always verify the CPU architecture (`uname -m`). On AWS Graviton (ARM64), you must ensure your Docker images support `arm64` or `multi-arch` manifests.
+
+---
+
+### ?? Final Results
+* **Root Partition (`/`):** Reduced from **93%** to **~45%** usage.
+* **Docker Capacity:** Increased from **~1GB** available to **19GB** available.
+* **Stability:** Implemented persistent mounting and clean JSON configuration.
+
+**Would you like me to convert this summary into a professional README.md file that you can push to your GitHub repository?**
