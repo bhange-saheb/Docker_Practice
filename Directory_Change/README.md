@@ -1,4 +1,4 @@
-\# 🚀 Docker Storage Migration on AWS EC2
+\# Docker Storage Migration on AWS EC2
 
 
 
@@ -72,6 +72,8 @@ lsblk
 
 sudo fdisk /dev/xvdf
 
+"new" --> "p" --> "w"
+
 sudo mkfs -t xfs /dev/xvdf1
 
 ```
@@ -136,7 +138,7 @@ sudo systemctl stop containerd
 
 
 
-`/etc/docker/daemon.json`
+`nano /etc/docker/daemon.json`
 
 
 
@@ -144,7 +146,7 @@ sudo systemctl stop containerd
 
 {
 
-&#x20; "data-root": "/dockerdata"
+ "data-root": "/dockerdata"
 
 }
 
@@ -244,7 +246,7 @@ sudo systemctl start docker
 
 ```bash
 
-sudo rm -rf /var/lib/docker/\*
+sudo rm -rf /var/lib/docker/*
 
 ```
 
@@ -333,10 +335,7 @@ If `docker.socket` is not stopped:
 
 
 \# 🏁 Conclusion
-
-
-
-This project demonstrates real-world DevOps skills:
+This project helps to demonstrate below DevOpsskills:
 
 
 
@@ -349,12 +348,6 @@ This project demonstrates real-world DevOps skills:
 \* AWS infrastructure handling
 
 
-
-\---
-
-
-
-⭐ If you found this useful, give it a star!
 
 
 
