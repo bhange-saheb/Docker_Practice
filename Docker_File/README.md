@@ -8,7 +8,7 @@ This repository contains a specialized Docker configuration for a DevOps environ
 Use the following command to build the custom image. Note the use of build arguments to specify tool versions.
 
 ```bash
-docker build --build-arg T_VERSION=1.6.6 --build-arg P_VERSION=1.8.0 --progress=plain --no-cache -t all-in-one-image -f dockerFile.dev .
+docker build --build-arg T_VERSION=1.6.6 --build-arg P_VERSION=1.8.0 --progress=plain --no-cache -t all-in-one-image -f dockerfile.dev .
 ```
 
 **Flag Breakdown:**
@@ -69,7 +69,7 @@ docker exec -it server1 sh
    ```
 
 2. **Prepare Configuration:**
-   * Create your Dockerfile: `nano dockerFile.dev`
+   * Create your Dockerfile: `nano dockerfile.dev`
    * Prepare application files: `nano app.js`
    * *Refer to `Line-by-Line_Explanation_of_Dockerfile.docx` for a detailed code walkthrough.*
 
@@ -77,5 +77,5 @@ docker exec -it server1 sh
 
 ## Notes
 * **Naming Convention:** Always ensure image tags are in **lowercase**.
-* **File Sensitivity:** If your file is named `dockerFile` (lowercase 'd'), you must use the `-f` flag. Standard `Dockerfile` is recognized automatically.
+* **File Sensitivity:** If your file is named `dockerfile` (lowercase 'd'), you must use the `-f` flag. Standard `Dockerfile` is recognized automatically.
 ```
