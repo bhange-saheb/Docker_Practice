@@ -448,13 +448,8 @@ Connected to the backend network for communication with the web app.
 
 
 
-🎯 Final Learning Outcomes
-
-
-
-By completing these lessons, you will understand:
-
-
+# Summary: Lesson's Outcomes
+ ## By this experience below quesrtion's are answered.
 
 How to define services in Docker Compose.
 
@@ -479,22 +474,6 @@ How to scale services.
 How to extend stacks with caching and proxies.
 
 
-
-📊 Visual Diagram (Mermaid)
-
-
-
-graph TD
-
-&#x20;   A\[User Browser] --> B\[Nginx (frontend network)]
-
-&#x20;   B --> C\[Web App (backend network)]
-
-&#x20;   C --> D\[PostgreSQL DB]
-
-&#x20;   D --> E\[pgAdmin]
-
-&#x20;   C --> F\[Redis Cache]
 
 
 
