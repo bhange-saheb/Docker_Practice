@@ -13,9 +13,9 @@ Lesson 1: Single Container Basics
 Goal
 
 
-
+'''bash
 Run a simple Node.js application in a container.
-
+'''
 
 
 docker-compose.yml
