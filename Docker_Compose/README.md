@@ -1,4 +1,4 @@
-Docker Compose Experience
+# Docker Compose Experience
 
 
 
@@ -6,19 +6,19 @@ This guide is structured as a multi-lesson series to help learners gradually und
 
 
 
-Lesson 1: Single Container Basics
+## Lesson 1: Single Container Basics
 
 
 
 Goal
 
 
-'''bash
+```bash
 Run a simple Node.js application in a container.
-'''
+``` 
 
 
-docker-compose.yml
+``` docker-compose.yml
 
 
 
@@ -61,10 +61,10 @@ volumes: Maps local code into the container.
 
 
 ports: Exposes the app on localhost:3000.
+```
 
 
-
-Lesson 2: Adding a Database
+## Lesson 2: Adding a Database
 
 
 
@@ -76,7 +76,7 @@ Connect the web app to a PostgreSQL database.
 
 
 
-docker-compose.yml
+``` docker-compose.yml
 
 
 
@@ -97,7 +97,7 @@ services:
 &#x20;   volumes:
 
 &#x20;     - db\_data:/var/lib/postgresql/data
-
+```
 
 
 Key Concepts
@@ -124,7 +124,7 @@ Use pgAdmin to manage the PostgreSQL database.
 
 
 
-docker-compose.yml
+``` docker-compose.yml
 
 
 
@@ -147,7 +147,7 @@ services:
 &#x20;   depends\_on:
 
 &#x20;     - db
-
+```
 
 
 Key Concepts
@@ -158,7 +158,7 @@ pgAdmin provides a web UI for managing PostgreSQL.
 
 
 
-Accessible at http://localhost:5050.
+Accessible at ``` http://localhost:5050.```
 
 
 
@@ -174,7 +174,7 @@ Use Nginx to route traffic to the web app.
 
 
 
-docker-compose.yml
+``` docker-compose.yml
 
 
 
@@ -215,7 +215,7 @@ server {
 &#x20;   }
 
 }
-
+```
 
 
 Key Concepts
@@ -242,7 +242,7 @@ Separate frontend and backend traffic using networks.
 
 
 
-docker-compose.yml
+``` docker-compose.yml
 
 
 
@@ -299,7 +299,7 @@ services:
 &#x20;     - frontend
 
 &#x20;     - backend
-
+```
 
 
 Key Concepts
@@ -334,7 +334,7 @@ Command
 
 
 
-docker-compose up --scale web=3
+``` docker-compose up --scale web=3 ```
 
 
 
@@ -362,7 +362,7 @@ Move sensitive data into a .env file.
 
 
 
-.env
+``` .env
 
 
 
@@ -371,10 +371,10 @@ POSTGRES\_USER=postgres
 POSTGRES\_PASSWORD=postgres
 
 POSTGRES\_DB=mydb
+```
 
 
-
-docker-compose.yml
+``` docker-compose.yml
 
 
 
@@ -389,7 +389,7 @@ db:
 &#x20;   POSTGRES\_PASSWORD: ${POSTGRES\_PASSWORD}
 
 &#x20;   POSTGRES\_DB: ${POSTGRES\_DB}
-
+```
 
 
 Key Concepts
@@ -416,7 +416,7 @@ Introduce Redis for caching.
 
 
 
-docker-compose.yml
+``` docker-compose.yml
 
 
 
@@ -433,7 +433,7 @@ services:
 &#x20;   networks:
 
 &#x20;     - backend
-
+```
 
 
 Key Concepts
